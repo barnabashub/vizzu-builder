@@ -9,6 +9,7 @@ from streamlit_extras.row import row  # type: ignore
 from ipyvizzustory.env.st.story import Story
 from ipyvizzustory import Slide, Step
 from ipyvizzu import Config, Data
+import requests
 
 from .data.generator import DataCodeGenerator
 
@@ -79,6 +80,7 @@ class StoryBuilder:
             rows = row(2)
             self._add_delete_button(rows)
             self._add_download_button(rows)
+            self._add_share_button(rows)
             self._add_show_code_button()
 
     def _add_delete_button(self, rows) -> None:  # type: ignore
@@ -100,6 +102,19 @@ class StoryBuilder:
                 use_container_width=True,
             )
             self.set_start_slide(self._start_slide)
+
+    def _add_share_button(self, rows) -> None:
+        if "story" in st.session_state and st.session_state.story["slides"]:
+            rows.button(
+                "Share Story",
+                use_container_width=True,
+                on_click=StoryBuilder.shareStory,
+            )
+
+    def shareStory(self):
+        if "story" in st.session_state:
+            file = {'file': st.session_state.story.to_html()}
+            response = requests.post("http://127.0.0.1:5000/fileupload", file=file)
 
     def _add_show_code_button(self) -> None:
         if "story" in st.session_state and st.session_state.story_code:
